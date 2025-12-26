@@ -42,10 +42,10 @@ model Content {
     description     String?
     thumbnail       String?
     parentId        Int?
-    parent          Content            @relation("ContentToContent", fields: [parentId], references: [id])
+    parent          Content?            @relation("ContentToContent", fields: [parentId], references: [id], map: "content_parent_fkey" )
     videoProgress   VideoProgress[]
-    children        Content[]          @relation("ContentTOContent")
-    courses         CourseContent      
+    children        Content[]          @relation("ContentToContent")
+    courses         CourseContent[]    
     createdAt       DateTime           @default(now())
     VideoMetaData   VideoMetaData?
     NotionMetaData  NotionMetaData?    
@@ -56,21 +56,19 @@ model Content {
 }
 
 model CourseContent {
-    course      Course   @relation(fields: [courseId], references: [id])
     courseId    Int
-    content     Content  @relation(fields: [contentId], references: [id])
     contentId   Int
+    course      Course   @relation(fields: [courseId], references: [id])
+    content     Content? @relation(fields: [contentId], references: [id])
 
     @@id([courseId, contentId])
 }
 
 model NotionMetaData {
     id           Int       @id @default(autoincrement())
-    contentId    Int
+    contentId    Int       @unique
     content      Content   @relation(fields: [contentId], references: [id])
     notionId     String
-
-    @@unique([contentId])
 }
 
 model VideoMetaData {
