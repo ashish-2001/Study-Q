@@ -248,7 +248,7 @@ model Answer {
     downvotes    Int           @default(0)
     totalanswers Int           @default(0)
     parentId     Int?
-    responses    Answer?       @relation("AnswerToAnswer")
+    responses    Answer        @relation("AnswerToAnswer")
     parent       Answer?       @relation("AnswerToAnswer", fields: [parentId], references: [id])
     updatedAt    DateTime      @updatedAt
 
@@ -267,7 +267,6 @@ model Vote {
     comment      Comment?       @relation(fields: [commentId], references: [id])
     userId       String       
     user         User           @relation(fields: [userId], references: [id])
-    voteType     VoteType
     createdAt    DateTime       @default(now())
 
     @@unique([questionId, userId])
@@ -284,11 +283,6 @@ model Event {
     notes         String?
     createdAt     DateTime      @default(now())
     updatedAt     DateTime      @updatedAt 
-}
-
-model VoteType {
-    UPVOTE
-    DOWNVOTE
 }
 
 enum PostType {
