@@ -235,6 +235,7 @@ model Question {
     @@index([authorId])
 }
 
+
 model Answer {
     id           Int           @id @default(autoincrement())
     content      String
