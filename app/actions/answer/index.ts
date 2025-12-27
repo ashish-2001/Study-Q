@@ -176,7 +176,7 @@ const DeleteAnswerHandler = async (
             error: "Failed to delete answer and nested answers."
         };
     };
-}
+};
 
 export const createAnswer = createSafeAction(
     AnswerInsertSchema,
