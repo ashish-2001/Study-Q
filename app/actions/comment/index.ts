@@ -13,8 +13,9 @@ import {
     ReturnTypePinComment,
     ReturnTypeUpdateComment
 } from "./types";
-
+import { createSafeAction } from '@/lib/create-safe-action';
 import { authOptions } from "@/lib/auth";
+import { CommentType, Prisma } from '@/app/generated/prisma/enums';
 import { rateLimit } from "@/lib/utils";
 import prisma from "@/db";
 import {
@@ -28,7 +29,7 @@ import { createSateAction } from "@/lib/create-safe-action";
 import { CommentType, Prisma } from "@prisma/client";
 import { revalidatePath } from 'next/cache';
 import { ROLES } from "../types";
-import { error } from 'console';
+
 
 export const getComments = async ( 
     q: Prisma.CommentFindManyArgs,
