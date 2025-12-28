@@ -148,6 +148,27 @@ const voteHandler = async (
         let updatedEntity;
         if(targetType === 'comment'){
             updatedEntity = await prisma.comment.findUnique(q);
+        } else if(targetType === 'question'){
+            updatedEntity = await prisma.question.findUnique(q);
+        } else if(targetType === 'answer'){
+            updatedEntity = await prisma.answer.findUnique(q);
+        }
+
+        if(currentPath){
+            revalidatePath(`${currentPath}/${slug}`);
+        }
+
+        return { data: updatedEntity };
+    } catch(e){
+        console.error(e){
+            return {
+                error: 'Failed to process the vote.'
+            }
         }
     }
-}
+};
+
+export const voteHndlerAction = createSafeAction(
+    VoteHandleSchema,
+    voteHandler
+);
