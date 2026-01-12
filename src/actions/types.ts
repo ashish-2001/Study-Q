@@ -1,4 +1,4 @@
-import { CommentType } from "../generated/prisma/enums";
+import { CommentType } from "../app/generated/prisma/enums";
 
 export interface QueryPaams {
     limit?: number;
