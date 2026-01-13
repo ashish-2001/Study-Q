@@ -147,14 +147,105 @@ export const UpdateVideoClient = ({
 
                                     if(response.status === 200){
                                         toast.success('Updated successfully')
+                                    } else{
+                                        toast.error('Something went wrong')
                                     }
                                 }}
                             >
-
+                                Update
                             </Button>
                         </aside>
                     </div>
                 </AccordionContent>
+                <AccordionItem>
+                    <AccordionTrigger>
+                        <div className="flex flex-col gap-4">
+                            <FileText size={40}/>Slides Links
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        <div className="grid w-full grid-cols-1 gap4 p-6 lg:grid-cols-7">
+                            <aside className="col-span-1 lg:col-span-3">
+                                <p className="text-lg">Add Links</p>
+                            </aside>
+                            <aside className="col-span-1 flex flex-col gap-4 lg:col-span-4">
+                                <Input
+                                    value={pdfLink}
+                                    type="text"
+                                    onChange={(e) => {
+                                        setPdfLink(e.target.value);
+                                    }}
+                                    placeholder={'pdf link'}
+                                />
+                                <Input
+                                    type="text"
+                                    placeholder="Admin password"
+                                    onChange={(e) => setAdminPassword(e.target.value)}
+                                />
+                                <Button 
+                                    className="my-4 w-full rounded p-2 font-bold text-white lg:w-[20%]"
+                                    onClick={async () => {
+                                        await axios.post('api/admin/contentmetadata', {
+                                            adminPassword,
+                                            contentId: content.id,
+                                            updates: {
+                                                slides: pdfLink
+                                            }
+                                        })
+                                    }}
+                                >
+                                    Update Slide Link
+                                </Button>
+                            </aside>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
+                <AccordionItem className="border-none" value="vtt">
+                    <AccordionTrigger className="p-6 text-lg font-bold lg:text-2xl">
+                        <div className="flex flex-col gap-4">
+                            <FileText size={40}/> VTT Link
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent>
+                        <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-7">
+                            <aside className="col-span-1 lg:col-span-3">
+                                <p className="text-lg">Add Links</p>
+                            </aside>
+                            <aside className="col-span-1 lg:col-span-4">
+                                <Input
+                                    value={vttLink}
+                                    type="text"
+                                    onChange={(e) => {
+                                        setVttLink(e.target.value);
+                                    }}
+                                    placeholder={'vtt Link'}
+                                />
+                                <Input 
+                                    type="text"
+                                    placeholder="Admin Password"
+                                    onChange={(e) => {
+                                        setAdminPassword(e.target.value);
+                                    }}
+                                    className="my-3"
+                                />
+                                <Button
+                                    className="my-4 w-full rounded p-2 font-bold text-white lg:w-[20%]"
+                                    onClick={async () => {
+                                        await axios.post('/api/admin/contentmetadata', {
+                                            adminPassword,
+                                            contentId: content.id,
+                                            updates: {
+                                                subtitles: vttLink
+                                            },
+                                        });
+                                    }}
+                                >
+                                    Update vtt link
+                                </Button>
+                            </aside>
+                        </div>
+                    </AccordionContent>
+                </AccordionItem>
             </Accordion>
         </div>
     )
