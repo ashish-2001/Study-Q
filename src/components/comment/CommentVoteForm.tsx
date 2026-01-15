@@ -97,3 +97,5 @@ const CommentVoteForm: React.FC<CommentVoteFormProps> = ({
         </div>
     )
 }
+
+export default CommentVoteForm;
