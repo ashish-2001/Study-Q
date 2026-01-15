@@ -44,3 +44,5 @@ const CommentPinForm = ({
         </form>
     );
 };
+
+export default CommentPinForm;
