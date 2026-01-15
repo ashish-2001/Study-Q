@@ -164,7 +164,7 @@ const Comments = async ({
                                             }
                                         )}
                                     >
-                                        <DropdownMenuItem>Intro comments</DropdownMenuItem>
+                                        <DropdownMenuItem>Intro comments </DropdownMenuItem>
                                     </Link>
                                 </DropdownMenuGroup>
                             </DropdownMenuContent>
@@ -172,6 +172,118 @@ const Comments = async ({
                     </div>
                 </div>
             </div>
+            <div className={`flex flex-col gap-4 ${data.parentComment ? 'rounded-r-lg border-1-2 border-blue-500 bg-primary/5 p-4' : ''}`}>
+                {data.parentComment && (
+                    <div className="flex flex-col gap-2">
+                        <h3 className="text-wrap text-xl md:text-2xl">
+                            <TimeCodeComment
+                                possiblePath={content.possiblePath}
+                                searchParams={searchParams}
+                                comment={data.parentComment.content}
+                                contentId={content.courseId}
+                            />
+                        </h3>
+                        <div className="flex gap-2 text-sm">
+                            <span className={`${data.parentComment.upvotes > 0 ? 'text-green-500' : 'text-neutral-500'}`}>
+                                {data.parentComment.upvotes}{' '}
+                                {data.parentComment.upvotes === 1 ? 'Upvotes' : 'Upvotes'}
+                            </span>
+                            <span className={`${data.parentComment.downvotes > 0 ? 'text-red-500' : 'text-neutral-500'}`}>
+                                {data.parentComment.downvotes}{' '}
+                                {data.parentComment.downvotes === 1 ? 'Downvote' : 'Downvotes'}
+                            </span>
+                        </div>
+                    </div>
+                )}
+                <CommentInputForm
+                    contentId={content.id}
+                    parentId={data?.parentComment?.id}
+                />
+            </div>
+            <div className="flex flex-col gap-4 break-all">
+                <div className="grid grid-cols-1 gap-6">
+                    {data.comments.map((c) => (
+                        <div key={c.id} className="flex w-full items-start gap-4">
+                            <div className="flex w-full items-start gap-4">
+                                <Avatar className="size-10">
+                                    <AvatarFallback className="bg-gradient-to-b from-blue-400 to-blue-700">
+                                        {`${(c as ExtendedComment).user?.name?.substring(0, 1)}`}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="grid w-full gap-2">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <div className="flex items-center gap-2">
+                                            <h3 className="text-xl font-semibold tracking-tight">
+                                                {(c as ExtendedComment).user?.name ?? ''}
+                                            </h3>
+                                            <span className="font-medium tracking-tight text-neutral-500">
+                                                {dayjs(c.createdAt).fromNow()}
+                                            </span>
+                                            {c.isPinned && (
+                                                <span className="text-sm text-primary/80">
+                                                    Pinned
+                                                </span>
+                                            )}
+                                        </div>
+                                        {(session.user.id.toString() === (c as ExtendedComment).userId.toString() || session.user.role === ROLES.ADMIN) && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <MoreVerticalIcon className="size-6"/>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent>
+                                                    {(session.user.id.toString() === (c as ExtendedComment).userId.toString() || session.user.role === ROLES.ADMIN) && (
+                                                        <DropdownMenuItem>
+                                                            <CommentDeleteForm commentId={c.id}/>
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {session.user.role === ROLES.ADMIN && (
+                                                        <DropdownMenuItem>
+                                                            <CommentPinForm commentId={c.id} contentId={c.contentId}/>
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                    {session.user.role === ROLES.ADMIN && (
+                                                        <DropdownMenuItem>
+                                                            <CommentApproveForm
+                                                                commentId={c.id}
+                                                                contentId={c.contentId}
+                                                            />
+                                                        </DropdownMenuItem>
+                                                    )}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
+                                    </div>
+                                    <TimeCodeComment
+                                        possiblePath={content.possiblePath}
+                                        searchParams={searchParams}
+                                        comment={c.content}
+                                        contentId={content.courseId}
+                                    />
+                                    <div className="flex items-center gap-4">
+                                        <CommentVoteForm
+                                            upvotes={c.upvotes}
+                                            downvotes={c.downvotes}
+                                            commentId={c.id}
+                                            voteType={
+                                                (c as ExtendedComment)?.votes?.[0]?.voteType ?? null
+                                            }
+                                        />
+                                        {!data.parentComment && (
+                                            <Link href={getUpdatedUrl(`/courses/${content.courseId}/${content.possiblePath}`, searchParams, { parentId: c.id })} scroll={false} className="flex items-center gap-2 text-neutral-500 transition-all duration-300 hover:text-blue-500">
+                                                <Reply className="size-"/>
+                                                {c.repliesCount}{' '}
+                                                {c.repliesCount === 1 ? 'Reply' : 'Replies'}
+                                            </Link>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     )
-}
+};
+
+export default Comments;
