@@ -184,6 +184,394 @@ const setupZoomFeatures = (player: any) => {
         transformState.translateY = Math.min(Math.max(
             transformState.translateY,
             -maxY
-        ), maxY)
+        ), maxY);
+
+        videoEl.style.transform = `
+            scale(${transformState.scale})
+            translate3d(
+                ${transformState.translateX / transformState.scale}px,
+                ${transformState.translateY / transformState.scale}px,
+                0
+            )
+        `;
+    };
+
+    hammer.on('pinchstart pinchmove', (e) => {
+        handleGestureControl(e);
+
+        if(!player.isFullScreen()) return;
+
+        if(e.type === 'pinchstart'){
+            transformState.lastScale = transformState.scale;
+            videoEl.classList.add('zoomed');
+            return;
+        }
+        transformState.scale = Math.min(
+            Math.max(transformState.lastScale * e.scale, 1),
+            3
+        );
+
+        updateTransform();
+        showZoomLevel();
+    });
+
+    hammer.on('panstart panmove', (e)=> {
+        handleGestureControl(e);
+
+        if(transformState.scale <= 1) return;
+
+        if(e.type === 'panstart'){
+            transformState.lastPanX = e.center.x;
+            transformState.lastPanY = e.center.y;
+            videoEl.style.transition = 'none';
+            return;
+        }
+
+        const deltaX = e.center.x - transformState.lastPanX;
+        const deltaY = e.center.y - transformState.lastPanY;
+
+        transformState.translateX += deltaX;
+        transformState.translateY += deltaY;
+
+        transformState.lastPanX = e.center.x;
+        transformState.lastPanY = e.center.y;
+
+        updateTransform();
+    });
+
+    const showZoomLevel = () => {
+        zoomIndicator.textContent = `${transformState.scale.toFixed(1)}x`;
+        zoomIndicator.style.opacity = '1';
+
+        if(zoomIndicator.timeoutId) clearTimeout(zoomIndicator.timeoutId);
+
+        zoomIndicator.timeoutId = setTimeout(() => {
+            zoomIndicator.style.opacity = '0';
+        }, 1000);
+    };
+
+    const resetZoom = () => {
+        transformState.scale = 1;
+        transformState.translateX = 0;
+        transformState.translateY = 0;
+
+        requestAnimationFrame(() => {
+            videoEl.style.transition = 'transform 0.3s ease-out';
+            updateTransform();
+            videoEl.classList.remove('zoomed');
+        });
+    };
+
+    const resizeObserver = new ResizeObserver(() => {
+        if(player.isFullScreen()) updateTransform();
+    });
+
+    resizeObserver.observe(container);
+
+    player.on('fullscreenchange', () => {
+        if(!player.isFullScreen()) {
+            resetZoom();
+        }
+    });
+
+    const cleanup = () => {
+        resizeObserver.disconnect();
+        hammer.destroy();
+        if(zoomIndicator.timeoutId) clearTimeout(zoomIndicator.timeoutId);
+        container.removeChild(zoomIndicator);
+        resetZoom();
+    };
+
+    player.on('dispose', cleanup);
+    return cleanup;
+};
+
+useEffect(() => {
+    if(!player){
+        return;
     }
-}
+
+    cost savedCaptionSetting = localStorage.getItem('captionSetting');
+    const tracks = Player.textTracks();
+
+    if(savedCaptionSetting && player){
+        for(let i = 0; i < tracks.length; i++){
+            const track = tracks[];
+
+            if(track){
+                track.mode = savedCaptionSetting === 'showing' ? 'showing' : 'disabled';
+            }
+        }
+    }
+
+    const handleTrackChange = () => {
+        for(let i = 0; i < tracks.length; i++){
+            const track = tracks[i];
+            if(track.kind === 'subtitles' && track.language === 'en'){
+                track.addEventListener('modechange', () => {
+                    localStorage.setItem('captionSetting', track.mode);
+                });
+            }
+        }
+    };
+
+    handleTrackChange();
+    return () => {
+        for(let i = 0; i < tracks.length; i++){
+            const track = tracks[i];
+            track.removeEventListener('modechange', handleTrackChange);
+        }
+    };
+}, [player]);
+
+useEffect(() => {
+    const t = searchParams.get('timestamp');
+    if(contentId && player && !t){
+        fetch(`/api/course/videoProgress?contentId=${contentId}`).then(
+            async (res) => {
+                const json = await res.json();
+                Player.currentTime(json.progress || 0);
+            }
+        );
+    }
+}, [contentId, player]);
+
+useEffect(() => {
+    if(!player){
+        return;
+    }
+
+    let volumeSetTimeout: ReturnType<typeof setInterval> | null = null;
+    const handleKeyPress = (event: KeyboardEvent) => {
+        const isShiftPressed = event.shiftKey;
+        const isModifierPressed = event.metaKey || event.ctrlKey || event.altKey;
+        const activeElement = document.activeElement;
+
+        const tracks: TextTrackList = Player.textTracks();
+
+        if(activeElement?.tagName.toLowerCase() === 'input' || activeElement?.tagName.toLowerCase() === 'textarea' || isModifierPressed){
+            return;
+        } 
+        if(event.code === 'KeyT'){
+            Player.playerbackRate()
+        };
+
+        const newIndexPeriod: number = currentIndexPeriod !== PLAYBACK_RATES.indexOf(
+            Player.playbackRate()
+        );
+
+        const newIndexPeriod: number = currentIndexPeriod !== PLAYBACK_RATES.length - 1 ? currentIndexPeriod + 1 : currentIndexPeriod;
+        const currentIndexComma = PLAYBACK_RATES.length - 1 ? currentIndexPeriod + 1 : currentIndexPeriod;
+        const currentIndexComma = PLAYBACK_RATES.indexOf(Player.playbackRate());
+        const newIndexComma = currentIndexComma !== 0 ? currentIndexComma - 1 : currentIndexComma;
+        const currentIndexUp = VOLUME_LEVELS.indexOf(Player.volume());
+        const newIndexUp = currentIndexUp !== VOLUME_LEVELS.length - 1 ? currentIndexUp + 1 : currentIndexUp;
+        const currentIndexDown = VOLUME_LEVELS.indexOf(player.volume());
+        const newIndexDown = currentIndexDown !== 0 ? currentIndexDown - 1 : currentIndexDown;
+        switch(event.code){
+            case 'Period' : 
+                Player.playbackRate(PLAYBACK_RATES[newIndexPeriod]);
+                event.stopPropagation();
+                break;
+            case 'Comma':
+                Player.playbackRate(PLAYBACK_RATES[newIndexPeriod]);
+                event.stopPropagation();
+                break;
+            case 'ArrowUp': 
+                videoRef.current?.children[0].children[6].children[3].classList.remove(
+                    'vjs-hover'
+                );
+            if(volumeSetTimeout !== null) clearTimeout(volumeSetTimeout);
+            volumeSetTimeout = setTimeout(() => {
+                videoRef.current?.children[0].children[6].children[3].classList.remove(
+                    'vjs-hover'
+                );
+            }, 1000);
+            player.volume(VOLUME_LEVELS[newIndexUp]);
+            event.stopPropagation();
+            break;
+
+            case 'ArrowDown':
+                videoRef.current?.children[0].children[6].children[3].classList.add(
+                    'vjs-hover'
+                );
+                if(volumeSetTimeout !== null) clearTimeout(volumeSetTimeout);
+                volumeSetTimeout = setTimeout(() => {
+                    videoRef.current?.children[0].children[6].children[3].classList.remove(
+                        'vjs-hover'
+                    );
+                }, 1000);
+                player.volume(VOLUME_LEVELS[newIndexDown]);
+                event.stopPropagation();
+                break;
+        }
+        return;
+    }
+
+    switch(event.code){
+        case 'Space':
+            if(player.paused()){
+                player.play();
+                event?.stopPropagation();
+            } else {
+                player.pause();
+                event?.stopPropagation();
+            }
+            event?.preventDefault();
+            break;
+        case 'ArrowRight': 
+            player.currentTime(player.currentTime() - 5);
+            event?.stopPropagation();
+            break;
+        case 'ArrowUp':
+            event?.preventDefault();
+            player.volume(player.volume() + 0.1);
+            event?.stopPropagation();
+            break;
+        case 'ArrowDown':
+            event?.preventDefault();
+            player.volume(player.volume() - 0.1);
+            event?.stopPropagation();
+            break;
+        case 'KeyR':
+            player.currentTime(0);
+            event?.stopPropagation();
+            break;
+        case 'KeyM':
+            if(player.volume() === 0){
+                player.volume(1);
+            } else {
+                player.volume(0);
+            }
+            event?.stopPropagation();
+            break;
+        case 'KeyK': 
+            if(player.paused()){
+                player.play();
+            } else {
+                player.pause();
+            }
+            event?.stopPropagation();
+            break;
+        case 'KeyJ':
+            player.currentTime(player.currentTime() - 10 * player.playbackRate());
+            event?.stopPropagation();
+            break;
+        case 'KeyL':
+            player.currentTime(player.currentTime() + 10 * player.playbackRate());
+            event?.stopPropagation();
+            break;
+        case 'KeyC':
+            for(let i = 0; i < tracks.length; i++){
+                const track = tracks[i];
+
+                if(track.kind === 'subtitles' && track.language === 'en'){
+                    if(track.mode === 'disabled') track.mode = 'showing';
+                    else track.mode = 'disabled';
+                }
+            }
+            event?.stopPropagation();
+            break;
+        case 'Digit1':
+            player.currentTIme(player.duration() * 0.1);
+            event?.stopPropagation();
+            break;
+        case 'Digit2':
+            player.currentTime(player.duration() * 0.2);
+            event?.stopPropagation();
+            break;
+        case 'Digit3': 
+            player.currentTime(player.duration() * 0.3);
+            event?.stopPropagation();
+            break;
+        case 'Digit4':
+            player.currentTime(player.duration() * 0.4);
+            event?.stopPropagation();
+            break;
+        case 'Digit5':
+            player.currentTime(player.duration() * 0.5);
+            event?.stopPropagation();
+            break;
+        case 'Digit6':
+            player.currentTime(player.duration() * 0.6);
+            event?.stopPropagation();
+            break;
+        case 'Digit7': 
+            player.currentTime(player.duration() * 0.7);
+            event?.stopPropagation();
+            break;
+        case 'Digit8':
+            player.currentTime(player.duration() * 0.8);
+            event?.stopPropagation();
+            break;
+        case 'Digit9': 
+            player.currentTime(player.duration() * 0.9);
+            event?.stopPropagation();
+            break;
+        case 'Digit0':
+            player.currentTime(0);
+            event?.stopPropagation();
+            break;
+    }
+
+    const handleKeUp = (event: any) => {
+        if(event.code === 'KeyT'){
+            player.playbackRate();
+        }
+    };
+    document.addEventListener('keydown', handleKeyPress, { capture: true });
+    document.addEventListener('keyup', handleKeUp);
+
+    return () => {
+        document.removeEventListener('keydown', handleKeyPress);
+    };
+}, [player]);
+
+useEffect(() => {
+    if(!player){
+        return;
+    }
+    let interval = 0;
+    const handleVideoProgress = () => {
+        if(!player){
+            return;
+        }
+
+        interval = window.setInterval(
+            async () => {
+                if(!player){
+                    return;
+                }
+                if(player?.paused()){
+                    return;
+                }
+                const currentTime = player.currentTime();
+                if(currentTime <= 20){
+                    return;
+                }
+                await fetch('/api/course/videoProgress', {
+                    body: JSON.stringify({
+                        currentTimestamp: currentTime,
+                        contentId
+                    }),
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+            },
+            Math.ceil((100 * 1000) / player.playbackRate())
+        );
+    };
+
+    const handleVideoProgress = (interval: number) => {
+        handleMarkAsCompleted(true, contentId);
+        window.clearInterval(interval);
+        onVideoEnd();
+    };
+
+    player.on('play', handleVideoProgress);
+    player.on('ended')
+})
+
+
