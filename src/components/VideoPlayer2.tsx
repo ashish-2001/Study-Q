@@ -18,6 +18,7 @@ import { createRoot } from 'react-dom/client';
 import { PictureInPicture2 } from 'lucide-react';
 import { AppxVideoPlayer } from "./AppxVideoPlayer";
 import { menuOptions } from "./Appbar";
+import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 
 interface VideoPlayerProps {
     setQuality: React.Dispatch<React.SetStateAction<string>>;
@@ -571,7 +572,112 @@ useEffect(() => {
     };
 
     player.on('play', handleVideoProgress);
-    player.on('ended')
-})
+    player.on('ended', () => handleVideoEnded(interval));
+    return () => {
+        window.clearInterval(interval);
+    };
+}, [player, contentId]);
 
+useEffect(() => {
+    if(!playerRef.current && videoRef.current){
+        const videoElement = document.createElement('video-js');
+        videoElement.classList.add('vjs-big-play-centered');
+        videoRef.current.appendChild(videoElement);
+        const player: any = (playerRef.current = videojs(
+            videoElement,
+            {
+                ...menuOptions,
+                playbackRates: [0.5, 1, 1.25, 1.5, 1.75, 2]
+            },
+            ()=> {
+                player.mobileUi();
+                player.eme();
+                setupZoomFeatures(player);
+                player.seekButtons({
+                    forward: 15,
+                    back: 15
+                });
+                player.qualitySelector = setQuality;
+                const qualitySelector = player.controlBar.addChild(
+                    'QualitySelectorControlBar'
+                );
+                const controlBar = player.getChild('controlBar');
+                const fullscreenToggle = controlBar.getChild('fullscreenToggle.el');
 
+                controlBar.el.insertBefore(qualitySelector.el(), fullscreenToggle.el());
+
+                const pipButton = createPipButton(player);
+                controlBar.el().insertBefore(pipButton.el(), fullscreenToggle.el());
+
+                setPlayer(player);
+                if(menuOptions.isComposite){
+                    player.spriteThumbnails({
+                        interval: options.delta,
+                        url: options.thumbnail.secure_url,
+                        width: menuOptions.width,
+                        height: options.height
+                    });
+                }
+                player.on('loadedmetadata', () => {
+                    if(onReady){
+                        onReady(player);
+                    }
+                });
+                player.on('fullscreenchange', () => {
+                    videoElement.focus();
+                });
+            }
+        ));
+
+        if(menuOptions.sources && options.sources[0].type.includes('application/dash+xml')){
+            player.src(options.sources[0]);
+        }
+    }
+}, [options, onReady]);
+
+useEffect(() => {
+    if(player){
+        const currentTime = Player.currentTime();
+        Player.src(options.sources[0]);
+        player.currentTime(currentTime);
+    }
+}, [options.sources[0]]);
+
+useEffect(() => {
+    const player = playerRef.current;
+    return () => {
+        if(player && !player.isDisposed()){
+            player.dispose();
+            playerRef.current = null;
+        }
+    };
+}, []);
+
+useEffect(() => {
+    const t = searchParams.get('timestamp');
+    if(player && t){
+        player.currentTime(parseInt(t, 10));
+    }
+}, [searchParams, player]);
+
+const isYoutubeUrl = (url: string) => {
+    const regex = /^https:\/\/www\.youtube\.com\/embed\/[a-zA-Z0-9_-]+/;
+    return regex.test(url);
+};
+
+if(isYoutubeUrl(vidUrl)) return <YoutubeRenderer url={vidUrl}/>;
+
+if(appxVideoId && typeof window !== 'undefined' && appxCourseId){
+    return <AppxVideoPlayer courseId={appxCourseId} videoId={appxVideoId}/>;
+
+    return (
+        <div 
+            data-vjs-player
+            style={{ maxWidth: '1350px', margin: '0 auto', width: '100%' }}
+        >
+            <div ref={videoRef} style={{ width: '100%', height: 'auto' }}/>
+        </div>
+    );
+};
+
+export default VideoPlayer;
