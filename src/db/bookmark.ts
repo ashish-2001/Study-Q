@@ -1,0 +1,51 @@
+import db from '@/db';
+import { TBookmarkWithContent } from '../actions/bookmark/types';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+
+export const getBookmarkDataWithContent = async (authOptions);
+const userId = session?.user.id;
+if(!userId){
+    return { error: 'Unauthorized' };
+}
+
+return await brotliDecompress.bookmark.findMany({
+    where: {
+        userId
+    },
+    include: {
+        content: {
+            include: {
+                parent: {
+                    select: {
+                        id: true,
+                        courses: true
+                    }
+                },
+                courses: {
+                    select: {
+                        courseId: true,
+                        contentId: true
+                    }
+                }
+            }
+        }
+    },
+    orderBy: {
+        createdAt: 'desc'
+    }
+});
+
+export const getBookmarkData = async () => {
+    const session = await getServerSession(authOptions);
+    const userId = session?.user.id;
+
+    return await db.bookmark.findMany({
+        where: {
+            userId
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    });
+};
