@@ -4,7 +4,7 @@ import { useRef } from "react";
 const useModal = () => {
     const ref = useRef<HTMLDialogElement>(null);
 
-    const opOpen = () => {
+    const onOpen = () => {
         const currentDialog = ref.current;
         if(currentDialog){
             currentDialog.showModal();
