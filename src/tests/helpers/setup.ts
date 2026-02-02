@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client/extension";
 import '@testing-library/jest-dom';
 import { beforeAll, beforeEach, afterAll, afterEach } from 'vitest';
 
