@@ -1,13 +1,11 @@
 'use client';
-import { useSearchParams, useRouter, useSearchParams } from "next/navigation";
-import { VideoPlayerSegment } from '@/components/VideoPlayerSegment';
+import { useRouter, useSearchParams } from "next/navigation";
+import { VideoPlayerSegment } from "../VideoPlayerSegment";
 import VideoContentChapters from '../VideoContentChapters';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useMemo, useState } from "react";
 import { Button } from '../ui/button';
 import Link from "next/link";
-import { metadata } from "@/src/app/layout";
-import { boolean, string } from "zod";
 
 export const ContentRendererClient = ({
     metadata,
@@ -33,7 +31,7 @@ export const ContentRendererClient = ({
     const [showChapters, setChapters] = useState(
         metadata?.segments?.length > 0
     );
-    const useSearchParams = useSearchParams();
+    const searchParams = useSearchParams();
     const router = useRouter();
     const [quality, setQuality] = useState<string>(
         searchParams.get('quality') ?? '1080'
