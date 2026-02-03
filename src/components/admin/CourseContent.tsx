@@ -3,7 +3,7 @@ import { useRouter } from "next/navigation";
 import { ContentCard } from '../ContentCard';
 import { RefreshCw } from 'lucide-react';
 import { useRecoilState } from 'recoil';
-import { trigger } from '@/store/atoms/trigger';
+import { trigger } from "@/src/store/atoms/trigger";
 import { useEffect } from "react";
 
 
