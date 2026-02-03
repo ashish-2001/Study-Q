@@ -113,7 +113,7 @@ export const ContentRenderer = async ({
         slides?: string;
         markAsCompleted: boolean;
         bookmark: Bookmark | null;
-        courseid: string;
+        courseId: string;
     };
 }) => {
     const metadata = await getMetadata(content.id);
