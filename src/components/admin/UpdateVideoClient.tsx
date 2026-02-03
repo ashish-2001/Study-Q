@@ -1,12 +1,7 @@
 'use client';
 import { useState } from "react";
 import axios from 'axios';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger
-} from '@/components/ui/accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../ui/accordion";
 import { FileText, Video } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
