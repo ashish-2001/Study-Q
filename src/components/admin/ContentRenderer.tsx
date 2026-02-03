@@ -1,11 +1,8 @@
-import db from '@/db';
+import db from '../../db';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { authOptions } from '@/src/lib/auth';
 import { ContentRendererClient } from './ContentRendererClient';
-import { Bookmark } from '@prisma/client';
-import { getAppxCourseId } from '@/utils/appx';
-import { meta } from 'zod/v4/core';
-
+import { Bookmark } from '@/src/app/generated/prisma/client';
 
 function bunnyUrl(url?: string){
     if(!url){
@@ -32,7 +29,7 @@ async function isUrlAccessible(url: string): Promise<boolean>{
     }
 }
 
-export const getMetadata = async (contentId: Number) => {
+export const getMetadata = async (contentId: number) => {
     const session = await getServerSession(authOptions);
     if(!session?.user){
         return null;
