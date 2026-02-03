@@ -3,21 +3,13 @@ import { useEffect, useState } from "react";
 import { AddNotionMetadata } from './AddNotionMetadata';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
-import { Label } from ''@/components/ui/label;
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from "../ui/label";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { FaDiscord } from 'react-icons/fa';
 import { toast } from 'sonner';
 import { useSetRecoilState } from 'recoil';
-import { trigger } from '@/store/atoms/trigger';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from '@/components/ui/dialog';
-
+import { trigger } from "@/src/store/atoms/trigger";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 
 export const AddContent = ({
     rest,
@@ -251,7 +243,7 @@ function AddVideosMetadata({
                             [`video_720p_${i}`] : metadata.video_720,
                             [`video_360p_${i}`] : metadata.video_360
                         }))
-                    }}
+                    }} key={i}
                 />
             ))}
         </div>
@@ -295,4 +287,4 @@ function AddVideoMetadata({ onChange }: { onChange: (metadata: any) => void}){
             />
         </div>
     )
-}
+};
