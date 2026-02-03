@@ -1,5 +1,5 @@
 'use client';
-import { Course } from '@prisma/client';
+import { Course } from '@/src/store/atoms';
 import { useRouter } from 'next/router';
 import { CourseCard } from '../CourseCard';
 
