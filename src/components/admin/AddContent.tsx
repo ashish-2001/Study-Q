@@ -74,7 +74,7 @@ export const AddContent = ({
                 setIsLoading(false);
                     return;
             }
-        }
+        };
 
         const response = await fetch('/api/admin/content', {
             body: JSON.stringify({
