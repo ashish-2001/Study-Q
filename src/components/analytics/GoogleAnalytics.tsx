@@ -15,8 +15,8 @@ export const GoogleAnalytics = () => {
                         dataLayer.push(arguments);
                     }
 
-                    gtag('js', new Date());
-                    gtag('config', 'G-3Z2X5XN9DG');
+                    gtag();
+                    gtag();
                 }}
             />
         </>
